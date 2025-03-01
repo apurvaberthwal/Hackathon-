@@ -2,11 +2,11 @@
   "name": "express-mysql-app",
   "version": "1.0.0",
   "description": "A Node.js application using Express and EJS with MySQL database connection.",
-  "main": "src/app.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
