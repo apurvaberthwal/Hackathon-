@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiting for Approval</title>
+    <style>
+        h1 {
+            color: white;
+        }
+        body {
+            background: linear-gradient(120deg, #3a7bd5 100%, #3a6073 100%);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 80px;
+            height: 100vh;
+        }
+        .container-main{
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .container {
+            width: 400px; /* Reduced width */
+            height: 500px; /* Reduced height */
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .loading-text {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        .approval-message {
+            display: none; /* Hide the message initially */
+            margin-top: 20px;
+            font-size: 24px; /* Increased font size */
+            color: white; /* Changed text color */
+            background-color: green; /* Added background color */
+            border: 2px solid white; /* Changed border color */
+            padding: 10px; /* Add some padding */
+            border-radius: 5px; /* Add rounded corners */
+        }
+        .success-message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: yellow;
+        }
+        .loader-img {
+            padding-top: 20px;
+            width: 200px; /* Set width */
+            height: 200px; /* Set height */
+        }
+    </style>
+</head>
+<body>
+    <!-- Success message for registration -->
+    
+    <div id="approvalMessage" class="approval-message">Your request has been approved. Please log in.</div>
+    
+    <div class="container-main">
+        <div class="container">
+            <div id="loader">
+                <div class="loading-text">Welcome, <%= email %></div>
+                <div class="success-message">
+                    Your registration details have been successfully submitted.Kindly check your mail.
+                </div>
+                <img class="loader-img" src="/images/wait.gif" alt="Loading...">
+                <div class="loading-text">Awaiting approval from the administrator... </div>
+            </div>
+            <button onclick="window.location.href='/'" style="margin-top: 20px; padding: 10px; font-size: 18px;">Return to Homepage</button>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            fetch('/check-status?email=<%= email %>')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.message === 'Your request has been approved. Please log in.') {
+                        document.getElementById('approvalMessage').style.display = 'block';
+                       
+                        setTimeout(() => {
+                            // Redirect with email as query parameter
+                            window.location.href = `/faculty/login?username=<%= email %>`;
+                        }, 3000);
+                    }
+                })
+                .catch(error => console.error('Error checking user status:', error));
+        }
+
+        setInterval(checkStatus, 1000);
+    </script>
+</body>
+</html>

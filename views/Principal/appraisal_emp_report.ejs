@@ -1,0 +1,145 @@
+<%- include("nav") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Appraisal Report</title>
+    <style> 
+    body {
+        background: linear-gradient(120deg, #3a7bd5 0%, #3a6073 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #f0f0f0;
+    }
+
+    .container {
+        width: 80%;
+        margin: 20px auto;
+        padding: 30px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #f2f2f2;
+    }
+
+    h3 {
+        font-size: 22px;
+        color: #f2f2f2;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .employee-details {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .employee-details p {
+        font-size: 18px;
+        color: #fff;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+        color: #f0f0f0;
+        font-size: 16px;
+    }
+
+    th {
+        background-color: #3498db;
+        color: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .back-button {
+        display: inline-block;
+        margin-bottom: 20px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+        background-color: #ff7961;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Back Button -->
+        <button class="back-button" onclick="window.location.href='/principal/report/'">Back</button>
+
+        <h2>Employee Appraisal Report</h2>
+
+        <!-- Employee Details Section -->
+        <div class="employee-details">
+            <p><strong>Employee Name:</strong> <%= employee.name || "Default Employee" %></p>
+            <p><strong>Appraisal Cycle:</strong> <%= appraisal_cycle_name %></p>
+            <p><strong>Total Grade:</strong> <%= total_grade %></p>
+        </div>
+
+        <!-- Criteria Tables -->
+        <% appraisalCriteria.forEach((criterion, index) => { %>
+            <h3>Criteria <%= index + 1 %>: <%= criterion.criteria_name %></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Parameters</th>
+                        <th>Document</th>
+                        <th>Self Score</th>
+                        <th>Committee Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (criterion.parameters) { %>
+                        <% criterion.parameters.forEach((param, paramIndex) => { %>
+                            <tr>
+                                <td><%= paramIndex + 1 %></td>
+                                <td><%= param.parameter_description %></td>
+                                <td><%= param.document || "N/A" %></td>
+                                <td><%= param.self_score %></td>
+                                <td><%= param.committee_score %></td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5">No parameters available for this criterion.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        <% }) %>
+    </div>
+</body>
+</html>

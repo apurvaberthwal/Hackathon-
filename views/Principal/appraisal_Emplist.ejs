@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appraisal Employee List</title>
+    <style> 
+        body {
+            background: linear-gradient(120deg, #3a7bd5 0%, #3a6073 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #f0f0f0;
+        }
+
+        .container {
+            width: 90%;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f2f2f2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+            color: #f0f0f0;
+            font-size: 16px;
+        }
+
+        th {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        button {
+            background-color: #1cc50c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5eff50;
+        }
+
+        .back-button {
+            background-color: #e80606;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: #ff4d4d;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="window.location.href='/principal/appraisalReport'">Back</button>
+        <h2>Appraisal Employee List</h2>
+
+        <!-- Add buttons for download -->
+        <div class="button-container">
+            <button onclick="downloadEmployeeListCSV()">Download as CSV</button>
+            <button onclick="downloadEmployeeListPDF()">Download as PDF</button>
+        </div>
+
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } else { %>
+            <table id="employee-table">
+                <thead>
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Self-Appraisal Marks</th>
+                        <th>Final Marks</th>
+                        <th>Total Grade</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+                <tbody id="employee-table-body">
+                    <% employees.forEach((employee) => { %>
+                        <tr>
+                            <td><%= employee.name %></td>
+                            <td><%= employee.email_id %></td>
+                            <td><%= employee.appraisal_status %></td>
+                            <td><%= employee.self_appraisal_marks || 'N/A' %></td>
+                            <td><%= employee.total_comm_score || 'N/A' %></td>
+                            <td><%= employee.grade || 'N/A' %></td>
+                            <td>
+                                <button class="view-button" onclick="redirectToEmployeeReport('<%= employee.user_id %>')">View</button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+
+    <!-- Add jsPDF and PapaParse CDN links -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <script>
+        function redirectToEmployeeReport(employeeId) {
+            // Redirect to employee-specific details page
+            window.location.href = `/principal/reports/<%= appraisal_id %>/${employeeId}`;
+        }
+
+        function downloadEmployeeListCSV() {
+            const table = document.getElementById("employee-table");
+            const rows = table.querySelectorAll("tr");
+            const csvData = [];
+
+            rows.forEach((row) => {
+                const cols = row.querySelectorAll("td, th");
+                const csvRow = [];
+                cols.forEach((col, index) => {
+                    let text = col.innerText;
+                    if (index < cols.length - 1) {
+                        csvRow.push(text); // Exclude the "View" button
+                    }
+                });
+                csvData.push(csvRow.join(","));
+            });
+
+            const csvString = csvData.join("\n");
+            const blob = new Blob([csvString], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "employee_list.csv";
+            link.click();
+        }
+
+        function downloadEmployeeListPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const table = document.getElementById("employee-table");
+
+            doc.text("Appraisal Employee List", 20, 10);
+
+            const tableRows = [];
+            const tableHead = [['Employee Name', 'Email', 'Status', 'Self-Appraisal Marks', 'Final Marks', 'Total Grade']];
+
+            const rows = table.querySelectorAll("tbody tr");
+            rows.forEach((row) => {
+                const cols = row.querySelectorAll("td");
+                const rowData = [];
+                cols.forEach((col, colIndex) => {
+                    if (colIndex < cols.length - 1) { // Exclude the "View" button
+                        rowData.push(col.innerText);
+                    }
+                });
+                tableRows.push(rowData);
+            });
+
+            doc.autoTable({
+                head: tableHead,
+                body: tableRows
+            });
+
+            doc.save("employee_list.pdf");
+        }
+    </script>
+</body>
+
+</html>

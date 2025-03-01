@@ -1,0 +1,203 @@
+<%- include("nav") %>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appraisal Cycle Table</title>
+    <style> 
+    body {
+        background: linear-gradient(120deg, #3a7bd5 0%, #3a6073 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #f0f0f0;
+    }
+
+    .container {
+        width: 90%;
+        margin: 20px auto;
+        padding: 30px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #f2f2f2;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+        color: #f0f0f0;
+        font-size: 16px;
+    }
+
+    th {
+        background-color: #3498db;
+        color: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        position: relative;
+        gap: 10px; /* Add spacing between buttons */
+    }
+
+    button {
+        background-color: #00ca11;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #5eff50;
+    }
+    </style>
+    
+</head>
+
+<body>
+    <!-- Button container for PDF and CSV download -->
+    <div class="button-container">
+        <button onclick="downloadPDF()">Download as PDF</button>
+        <button onclick="downloadCSV()">Download as CSV</button>
+    </div>
+    <div class="container">
+        <h2>Appraisal Cycle Table</h2>
+        <table id="appraisal-table">
+            <thead>
+                <tr>
+                    <th>Appraisal ID</th>
+                    <th>Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>View</th>
+                </tr>
+            </thead>
+            <tbody id="appraisal-table-body">
+                <% appraisals.forEach((appraisal, index) => { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= appraisal.appraisal_cycle_name %></td>
+                        <td><%= new Date(appraisal.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) || 'N/A' %></td>
+                        <td><%= new Date(appraisal.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) || 'N/A' %></td>
+                        <td><%= appraisal.status %></td>
+                        <td>
+                            <button class="view-button" onclick="redirectToEmployeeList('<%= appraisal.appraisal_id %>')">View</button>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+    </div>
+
+    <!-- Add jsPDF and PapaParse CDN links -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <script>
+        function redirectToEmployeeList(appraisalId) {
+            window.location.href = `/principal/reports/${appraisalId}`;
+        }
+
+        function downloadCSV() {
+    const table = document.getElementById("appraisal-table");
+    const rows = table.querySelectorAll("tr");
+    const csvData = [];
+
+    rows.forEach((row) => {
+        const cols = row.querySelectorAll("td, th");
+        const csvRow = [];
+        cols.forEach((col, index) => {
+            let text = col.innerText;
+            if (index === 2 || index === 3) { // Check if the column is Start Date (index 2) or End Date (index 3)
+                const date = new Date(text);
+                if (!isNaN(date)) {
+                    text = date.toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: '2-digit'
+                    });
+                }
+            }
+            if (index < cols.length - 1) {
+                csvRow.push(text);
+            }
+        });
+        csvData.push(csvRow.join(","));
+    });
+
+    const csvString = csvData.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "appraisal_cycle_table.csv";
+    link.click();
+}
+
+
+function downloadPDF() {
+        const { jsPDF } = window.jspdf; 
+        const doc = new jsPDF();
+        const table = document.getElementById("appraisal-table");
+
+        doc.text("Appraisal Cycle Table", 20, 10);
+
+        const tableRows = [];
+        const tableHead = [['ID', 'Name', 'Start Date', 'End Date', 'Status']];  // Define table headers
+
+        const rows = table.querySelectorAll("tbody tr");
+        rows.forEach((row) => {
+            const cols = row.querySelectorAll("td");
+            const rowData = [];
+            cols.forEach((col, colIndex) => {
+                if (colIndex < cols.length - 1) {
+                    rowData.push(col.innerText);
+                }
+            });
+            tableRows.push(rowData);
+        });
+
+        doc.autoTable({
+            head: tableHead,
+            body: tableRows
+        });
+
+        doc.save("appraisal_cycle_table.pdf");
+    }
+    </script>
+</body>
+
+</html>

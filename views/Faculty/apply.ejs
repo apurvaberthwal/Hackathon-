@@ -1,0 +1,265 @@
+<%- include("nav") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply Criteria</title>
+    <style>
+        /* Your existing styles */
+        h1 {
+            color: white;
+        }
+        body {
+            background: linear-gradient(120deg, #3a7bd5 100%, #3a6073 100%);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 80px;
+            height: 100vh;
+        }
+        .main {
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 85%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: black;
+        }
+        td {
+            color: white;
+        }
+
+        .btn-submit {
+            display: block;
+            width: 200px;
+            padding: 12px;
+            margin-top: 20px;
+            margin-left: 550px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+
+        .btn-submit:disabled {
+            background-color: #a9a9a9;
+            cursor: not-allowed;
+        }
+
+        .btn-toggle {
+            background-color: #f44336;
+            margin-top: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hidden-message {
+            display: none;
+            color: #f44336;
+            margin-top: 20px;
+        }
+
+        .submit-button-wrapper {
+            text-align: center; /* Center the button */
+            margin-top: 20px;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+}
+
+    </style>
+</head>
+<body>
+    <div class="main">
+    <div class="container">
+        <h1><%= criteriaName ? criteriaName : 'No Criteria' %></h1>
+        <form action="/faculty/apply/<%= appraisalId %>/<%= criteriaId %>" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+            <input type="hidden" name="criteriaId" value="<%= criteriaId %>">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Parameter Name</th>
+                        <th>Max Score</th>
+                        <th>Self Approve Score</th>
+                        <th>Supportive Documents</th>
+                        <th>Disable Document Upload</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let totalMaxMarks = 0, totalSelfApproved = 0; %>
+                    <% parameters.forEach((param, index) => { %>
+                        <% totalMaxMarks += param.parameter_max_marks; %>
+                        <% totalSelfApproved += param.marks_by_emp || 0; %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= param.parameter_description %></td>
+                            <td><%= param.parameter_max_marks %></td>
+                            <td>
+                                <input type="number" name="self_approved_<%= param.c_parameter_id %>" 
+                                    value="<%= param.marks_by_emp || '' %>" min="0" max="<%= param.parameter_max_marks %>"
+                                    oninput="validateInput(this)">
+                            </td>
+                            <td>
+                                <input type="file" name="documents_<%= param.c_parameter_id %>[]"
+                                    accept=".pdf,image/*" multiple class="supportive-document" id="doc_<%= param.c_parameter_id %>">
+                            </td>
+                            
+                            <td>
+                                <input type="checkbox" name="no_proof_<%= param.c_parameter_id %>" onclick="toggleSingleDocument('<%= param.c_parameter_id %>')" id="toggle_<%= param.c_parameter_id %>"> No proof available
+                            </td>
+
+
+                        </tr>
+                    <% }) %>
+                    <tr>
+                        <td colspan="2">Total</td>
+                        <td><%= totalMaxMarks %></td>
+                        <td id="totalSelfApproved"></td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Centered Submit Button -->
+            <div class="submit-button-wrapper">
+                <button type="submit" class="btn-submit">Submit Documents</button>
+            </div>
+
+        </form>
+
+        <!-- Hidden message for when supportive documents are disabled -->
+        <p class="hidden-message" id="supportiveDisabledMessage">Supportive document upload has been disabled as per your request.</p>
+    </div>
+</div>
+    <script>
+        // function validateInput(input) {
+        //     var maxScore = parseInt(input.max);
+        //     var value = parseInt(input.value);
+
+        //     if (value > maxScore) {
+        //         alert(`The self-approved score cannot exceed the max score ${maxScore}`);
+        //         input.value = ''; // Reset the value
+        //     } else {
+        //         input.setCustomValidity('');
+        //         input.style.borderColor = ""; // Reset the border color
+        //     }
+
+        //     recalculateTotal();
+        // }
+
+        function validateInput(input) {
+    var maxScore = parseInt(input.max);
+    var value = parseInt(input.value);
+    var paramId = input.name.replace('self_approved_', ''); // Extract parameter id
+
+    if (value > maxScore) {
+        alert(`The self-approved score cannot exceed the max score ${maxScore}`);
+        input.value = ''; // Reset the value
+    } else {
+        input.setCustomValidity('');
+        input.style.borderColor = ""; // Reset the border color
+    } 
+
+    // Disable supportive document and checkbox if value is 0
+    var docInput = document.getElementById('doc_' + paramId);
+    var toggleCheckbox = document.getElementById('toggle_' + paramId);
+    
+    if (value == 0) {
+        var confirmDisable = window.confirm("Are you sure you want to disable document upload for this parameter?");
+
+        if (confirmDisable) {
+            docInput.disabled = true;
+            toggleCheckbox.checked = true;
+        }
+        else {
+            input.value = ''; // Reset the value
+        }
+    } else {
+        docInput.disabled = false;
+        toggleCheckbox.checked = false;
+    }
+
+    recalculateTotal();
+}
+        function recalculateTotal() {
+            var inputs = document.querySelectorAll('input[type="number"]');
+            var total = 0;
+            for (var i = 0; i < inputs.length; i++) {
+                total += parseInt(inputs[i].value) || 0;
+            }
+            document.getElementById('totalSelfApproved').innerText = total;
+        }
+
+        function toggleSingleDocument(paramId) {
+            var docInput = document.getElementById('doc_' + paramId);
+            var toggleCheckbox = document.getElementById('toggle_' + paramId);
+
+            docInput.disabled = toggleCheckbox.checked;
+        }
+        
+
+        function validateForm() {
+            var allValid = true;
+            var message = '';
+
+            // Check all rows for completeness
+            document.querySelectorAll('tbody tr').forEach(function(row) {
+                var numberInput = row.querySelector('input[type="number"]');
+                var fileInput = row.querySelector('input[type="file"]');
+                var checkbox = row.querySelector('input[type="checkbox"]');
+
+                if (numberInput && numberInput.value === '') {
+                    allValid = false;
+                    message = 'Please fill out all self-approved scores.';
+                }
+
+                if (fileInput && !fileInput.disabled && fileInput.files.length === 0) {
+                    allValid = false;
+                    message = 'Please upload all supportive documents or check the "No proof available" option.';
+                }
+            });
+
+            if (!allValid) {
+                alert(message);
+            }
+
+            return allValid; // Prevent form submission if not all fields are filled
+        }
+
+        // Initialize the total on page load
+        window.onload = recalculateTotal;
+    </script>
+</body>
+</html>
