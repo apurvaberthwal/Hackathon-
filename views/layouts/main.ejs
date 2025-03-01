@@ -1,18 +1,60 @@
+<!-- views/layouts/main.ejs -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Work-Life Balance Assistant</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- JS Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.3.0/luxon.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.2.1/chart.umd.min.js"></script>
+  
+  <!-- Theme detector -->
+  <script>
+    // Check user preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+  </script>
 </head>
-<body>
-    <%- include('../partials/header') %>
+<body class="bg-primary text-primary transition-all duration-300">
+  
+  <!-- Header -->
+  <%- include('../partials/header') %>
+  
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <%- include('../partials/sidebar') %>
     
-    <main>
-        <%- body %>
+    <!-- Main Content -->
+    <main class="flex-grow p-6">
+      <%- body %>
     </main>
-    
-    <%- include('../partials/footer') %>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="bg-secondary text-secondary-content p-4 text-center text-sm">
+    <p>© 2025 AI Work-Life Balance Assistant | Powered by Gemini 2.0 Flash</p>
+  </footer>
+  
+  <!-- Theme Toggle Script -->
+  <script src="/js/themeToggle.js"></script>
+  
+  <!-- Main JavaScript -->
+  <script src="/js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,192 @@
+/**
+ * Theme variables for AI Work-Life Balance Assistant
+ * Cyberpunk-inspired design with dark/light mode support
+ */
+
+/* Default Dark Theme */
+:root {
+    /* Background colors */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --input-bg: rgba(15, 23, 42, 0.8);
+    --break-bg: rgba(51, 65, 85, 0.3);
+    
+    /* Text colors */
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --text-on-gradient: #ffffff;
+    
+    /* Border colors */
+    --border-color: rgba(148, 163, 184, 0.2);
+    --border-light: rgba(148, 163, 184, 0.1);
+    
+    /* Accent colors */
+    --accent: #7c3aed;
+    --accent-hover: #6d28d9;
+    --accent-secondary: #4f46e5;
+    
+    /* Time slot colors */
+    --deep-work-color: #6366f1;
+    --meeting-color: #ec4899;
+    --break-color: #22c55e;
+    --personal-color: #f59e0b;
+    
+    /* Button colors */
+    --button-bg: #334155;
+    --button-text: #f8fafc;
+    --button-bg-hover: #475569;
+    
+    /* Gradient colors */
+    --gradient-1: rgba(124, 58, 237, 0.8);
+    --gradient-2: rgba(79, 70, 229, 0.8);
+    --gradient-3: rgba(236, 72, 153, 0.8);
+    
+    /* AI components */
+    --ai-badge-bg: rgba(124, 58, 237, 0.2);
+    --ai-badge-text: #a78bfa;
+    
+    /* Tooltip */
+    --tooltip-bg: rgba(30, 41, 59, 0.95);
+    --tooltip-text: #f8fafc;
+  }
+  
+  /* Light Theme */
+  [data-theme="light"] {
+    /* Background colors */
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --card-bg: rgba(241, 245, 249, 0.7);
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --break-bg: rgba(226, 232, 240, 0.5);
+    
+    /* Text colors */
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-tertiary: #64748b;
+    --text-on-gradient: #ffffff;
+    
+    /* Border colors */
+    --border-color: rgba(148, 163, 184, 0.3);
+    --border-light: rgba(148, 163, 184, 0.2);
+    
+    /* Button colors */
+    --button-bg: #e2e8f0;
+    --button-text: #0f172a;
+    --button-bg-hover: #cbd5e1;
+    
+    /* AI components */
+    --ai-badge-bg: rgba(124, 58, 237, 0.1);
+    --ai-badge-text: #7c3aed;
+    
+    /* Tooltip */
+    --tooltip-bg: rgba(241, 245, 249, 0.95);
+    --tooltip-text: #0f172a;
+  }
+  
+ 
+
+/* Transition for theme switching */
+.theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* Theme toggle button */
+  .theme-toggle {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    border-radius: 26px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .theme-toggle-track {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+  }
+  
+  [data-theme="light"] .theme-toggle-track {
+    transform: translateX(24px);
+  }
+  
+  /* Neon accents for dark mode */
+  [data-theme="dark"] .btn-primary {
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+  }
+  
+  [data-theme="dark"] .card-accent {
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.15);
+  }
+  
+  /* Accent outlines for light mode */
+  [data-theme="light"] .btn-primary {
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+  }
+  
+  /* Cyberpunk-inspired scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
+  }
+  
+  /* Timeline color indicators */
+  .timeline-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  
+  .timeline-indicator.deep-work {
+    background-color: var(--deep-work-color);
+  }
+  
+  .timeline-indicator.meeting {
+    background-color: var(--meeting-color);
+  }
+  
+  .timeline-indicator.break {
+    background-color: var(--break-color);
+  }
+  
+  .timeline-indicator.personal {
+    background-color: var(--personal-color);
+  }
+  
+  /* Glassmorphism card variations */
+  .card-glass {
+    background: rgba(var(--card-bg-rgb), 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--border-color-rgb), 0.2);
+  }

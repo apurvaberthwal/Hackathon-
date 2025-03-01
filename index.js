@@ -1,58 +1,122 @@
-import bodyParser from 'body-parser';
-import flash from "connect-flash"; // For displaying flash messages
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import { config } from 'dotenv'; //environment variable
-import express from 'express'; // Web framework
-import session from "express-session";
+// app.js
+const express = require('express');
+const session = require('express-session');
+const passport = require('./config/passport');
+const path = require('path');
+const { sequelize, testConnection } = require('./config/db');
+const MySQLStore = require('express-mysql-session')(session);
+const morgan = require('morgan');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config();
 
+// Import routes
+const authRoutes = require('./routes/auth');
+const dashboardRoutes = require('./routes/dashboard');
+const tasksRoutes = require('./routes/tasks');
+const aiRoutes = require('./routes/ai');
 
-config();
 const app = express();
-app.use(cors());
-app.use(cookieParser())
-// Define the port number
-const PORT = 8800
 
-app.use(express.static('public'));
-app.use(express.static('uploads'));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
+// Test database connection
+testConnection();
 
-// Set the view engine to use EJS
-app.set('view engine', 'ejs');
-app.set('views', './views');
-// Set up session middleware
-app.use(session({
-  secret: 'PixelPioneers',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 1 week in milliseconds
+// Session store options
+const sessionStore = new MySQLStore({
+  host: process.env.DB_HOST,
+  port: 3306,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+});
+
+// Middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", "https://www.googleapis.com"],
+      fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  }
 }));
-app.use(flash());
 
-// Error-handling middleware
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.use(limiter);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(morgan('dev'));
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  store: sessionStore,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Set view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Routes
+app.use('/auth', authRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/tasks', tasksRoutes);
+app.use('/ai', aiRoutes);
+
+// Home route
+app.get('/', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/dashboard');
+  }
+  res.render('index');
+});
+
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        error: {
-            message: err.message,
-            stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
-        },
-    });
-});
-
-
-
-app.get("/", async function (req, res) {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Something went wrong';
   
+  res.status(statusCode).render('error', {
+    statusCode,
+    message,
+    error: err,
+    backUrl: '/',
+    backText: 'Back to Dashboard'
+  });
+});
 
-  res.render("index.ejs");
+// For 404 errors
+app.use((req, res) => {
+  res.status(404).render('error', {
+    statusCode: 404,
+    message: 'Page not found',
+    backUrl: '/',
+    backText: 'Back to Dashboard'
+  });
 });
 
 
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-});
+module.exports = app;

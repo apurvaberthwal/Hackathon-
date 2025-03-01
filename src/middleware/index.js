@@ -1,1 +1,0 @@
-// This file exports middleware functions that can be used in the application, such as authentication or logging.

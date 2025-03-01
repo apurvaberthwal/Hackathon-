@@ -1,175 +1,129 @@
+<!-- filepath: /d:/Code/Final Project/Hackathon-/views/index.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage</title>
-    <!-- Import Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">    
-    <style>
-        body {
-            background: linear-gradient(120deg, #3a7bd5 100%, #3a6073 100%);
-            font-family: 'Roboto Slab', serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            margin-top: 80px;
-            margin-left: 50px;
-            width: 90%;
-            padding: 50px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .left-side {
-            flex: 1;
-            text-align: center;
-        }
-
-        /* Rotating effect for Performance 360 */
-        .left-side img {
-            width: 100%;
-            max-width: 600px;
-            border-radius: 12px;
-            /* Apply rotation */
-        }
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Work-Life Balance Assistant</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <style>
+    .hero {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    }
     
-        .right-side {
-            flex: 1;
-            text-align: center;
-        }
-
-        /* Unique font for Welcome and Performance 360 */
-        h1, .performance-title {
-            font-family: 'Montserrat', sans-serif;
-            color: #f2f2f2;
-        }
-
-        h1 {
-            font-size: 48px;
-            margin-bottom: 40px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .performance-title {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-
-        .login-group, .register-group {
-            margin-bottom: 40px;
-        }
-
-        .login-group h2, .register-group h2 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: #f2f2f2;
-        }
-
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-        }
-
-        .btn-group button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 14px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background-color 0.3s ease;
-            margin: 5px 0;
-            width: 100%;
-            max-width: 280px;
-        }
-
-        .btn-group button:hover {
-            background-color: #2980b9;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .left-side img {
-                max-width: 100%;
-            }
-
-            .btn-group {
-                flex-direction: column;
-                width: 100%;
-                gap: 10px;
-            }
-            
-        }
-        .highlight {
-            display: inline-block;
-            color: #3498db;
-            font-size: 42px;
-            font-family: 'Poppins', sans-serif;
-            position: relative;
-            transition: color 0.4s ease-in-out;
-        }
-
-        /* Smooth underline on hover */
-        .highlight::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 3px;
-            background-color: #e74c3c;
-            left: 0;
-            bottom: -5px;
-            transition: width 0.4s ease-in-out;
-        }
-
-        .highlight:hover::after {
-            width: 100%;
-        }
-
-        /* Color change on hover */
-        .highlight:hover {
-            color: #e74c3c;
-        }
-
-        p {
-            font-size: 18px;
-            margin-top: 20px;
-        }
-
-
-       
-       
-    </style>
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .hero p {
+      font-size: 1.25rem;
+      max-width: 800px;
+      margin-bottom: 2rem;
+      color: var(--text-secondary);
+    }
+    
+    .btn-login {
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-secondary) 100%);
+      color: var(--text-on-gradient);
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.25rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-decoration: none;
+    }
+    
+    .btn-login:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 4rem 2rem;
+    }
+    
+    .feature-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+    }
+    
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="left-side">
-            <!-- Rotating Image -->
-          
-        
-        </div>
-        <div class="right-side">
-            <h1>Welcome to <span class="highlight">Performance 360</span></h1>
-    
-           
+  <header>
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="text-xl font-bold">
+        AI Work-Life Balance Assistant
+      </div>
+      <div>
+        <a href="/auth/login" class="btn">Login</a>
+        <a href="/auth/google" class="btn btn-primary ml-4">Sign in with Google</a>
+      </div>
+    </nav>
+  </header>
 
-           
+  <main>
+    <section class="hero">
+      <h1>Balance Your Work and Life with AI</h1>
+      <p>Our AI-powered assistant helps you optimize your schedule, manage tasks, and maintain a healthy work-life balance through intelligent recommendations and personalized insights.</p>
+      <a href="/auth/google" class="btn-login">Get Started with Google</a>
+    </section>
+
+    <section class="features container mx-auto">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-brain"></i>
         </div>
-    </div>
+        <h3>AI-Powered Scheduling</h3>
+        <p>Our AI analyzes your energy patterns and optimizes your schedule for maximum productivity.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h3>Work-Life Analytics</h3>
+        <p>Track your balance between professional and personal activities with detailed insights.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <h3>Google Calendar Integration</h3>
+        <p>Seamlessly integrates with your Google Calendar to optimize your existing schedule.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-secondary text-center py-6">
+    <p>&copy; 2023 AI Work-Life Balance Assistant | Built with Gemini 2.0 Flash</p>
+  </footer>
 </body>
 </html>

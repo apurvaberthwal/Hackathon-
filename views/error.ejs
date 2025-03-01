@@ -1,61 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Access Denied</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #303334;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        
-        .container {
-            text-align: center;
-            background-color: #f9f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            color: #0c0c0c;
-            margin-bottom: 20px;
-        }
-        
-        p {
-            color: #0b0b0b;
-            margin-bottom: 30px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - AI Work-Life Balance</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <style>
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+      background: linear-gradient(to bottom right, var(--bg-primary), rgba(124, 58, 237, 0.1));
+    }
+    
+    .error-card {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .error-code {
+      font-size: 6rem;
+      font-weight: bold;
+      margin: 0;
+      background: linear-gradient(90deg, var(--accent), #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    
+    .error-message {
+      font-size: 1.5rem;
+      margin: 1rem 0 2rem;
+      color: var(--text-primary);
+    }
+    
+    .error-details {
+      color: var(--text-secondary, #94a3b8);
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 0.5rem;
+      text-align: left;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+    
+    .back-button {
+      background: var(--accent);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+    }
+    
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+    }
+    
+    .glitch-effect {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .glitch-effect:after {
+      content: attr(data-text);
+      position: absolute;
+      left: 2px;
+      text-shadow: -1px 0 #f472b6;
+      top: 0;
+      color: var(--accent);
+      overflow: hidden;
+      clip: rect(0, 900px, 0, 0);
+      animation: glitch-effect 3s infinite linear alternate-reverse;
+    }
+    
+    @keyframes glitch-effect {
+      0% {
+        clip: rect(36px, 9999px, 28px, 0);
+      }
+      5% {
+        clip: rect(93px, 9999px, 71px, 0);
+      }
+      10% {
+        clip: rect(37px, 9999px, 5px, 0);
+      }
+      15% {
+        clip: rect(73px, 9999px, 65px, 0);
+      }
+      20% {
+        clip: rect(0, 9999px, 0, 0);
+      }
+      95% {
+        clip: rect(40px, 9999px, 29px, 0);
+      }
+      100% {
+        clip: rect(67px, 9999px, 95px, 0);
+      }
+    }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>Access Denied</h1>
-        <p>You do not have permission to access this page.</p>
-        <button onclick="history.back()">Go Back</button>
+  <div class="error-container">
+    <div class="error-card">
+      <% 
+        // Define default values to prevent reference errors
+        const code = typeof statusCode !== 'undefined' ? statusCode : 404;
+        const msg = typeof message !== 'undefined' ? message : 'Page not found';
+        const back = typeof backUrl !== 'undefined' ? backUrl : '/';
+        const btnText = typeof backText !== 'undefined' ? backText : 'Back to Dashboard';
+        const isDev = typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production';
+      %>
+      
+      <div class="glitch-effect" data-text="<%= code %>">
+        <h1 class="error-code"><%= code %></h1>
+      </div>
+      <h2 class="error-message"><%= msg %></h2>
+      
+      <% if (typeof error !== 'undefined' && error && isDev) { %>
+        <div class="error-details">
+          <p><strong>Error details (visible in development only):</strong></p>
+          <pre><%= error.stack %></pre>
+        </div>
+      <% } %>
+      
+      <a href="<%= back %>" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M5 12l14 0"></path>
+          <path d="M5 12l4 4"></path>
+          <path d="M5 12l4 -4"></path>
+        </svg>
+        <%= btnText %>
+      </a>
     </div>
-</body>
+  </div>
 
+  <script>
+    // Check for stored theme preference
+    document.addEventListener('DOMContentLoaded', () => {
+      const storedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', storedTheme);
+    });
+  </script>
+</body>
 </html>
