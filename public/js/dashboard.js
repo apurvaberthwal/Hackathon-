@@ -747,3 +747,51 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, 5000);
   }
+  /**
+ * Set up realtime updates
+ */
+function setupRealtimeUpdates() {
+    // Check if Socket.io is available
+    if (typeof io !== 'undefined') {
+      // Connect to Socket.io server
+      const socket = io();
+      
+      // Connection opened
+      socket.on('connect', function() {
+        console.log('Connected to WebSocket server');
+        
+        // Authenticate with user ID if available
+        const userId = document.body.dataset.userId;
+        if (userId) {
+          socket.emit('authenticate', userId);
+        }
+      });
+      
+      // Listen for messages
+      socket.on('schedule_update', function(data) {
+        refreshTimeline();
+      });
+      
+      socket.on('wellness_update', function(data) {
+        updateWellnessScore(data.score);
+      });
+      
+      socket.on('notification', function(data) {
+        showNotification(data.message, data.notificationType);
+      });
+      
+      // Connection error
+      socket.on('connect_error', function(error) {
+        console.error('WebSocket error:', error);
+      });
+      
+      // Connection closed
+      socket.on('disconnect', function() {
+        console.log('Disconnected from WebSocket server');
+      });
+    } else {
+      console.warn('Socket.io not available');
+    }
+  }
+  
+  // Remove the getWebSocketUrl function as it's no longer needed with Socket.io

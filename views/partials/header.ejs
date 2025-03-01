@@ -1,0 +1,43 @@
+<!-- views/partials/header.ejs -->
+<header class="header">
+    <div class="logo">
+      <h1><span class="text-gradient">Balance</span>AI</h1>
+    </div>
+    
+    <div class="header-actions">
+      <button id="quick-optimize-btn" class="btn btn-primary btn-glow">
+        <i class="fas fa-magic"></i> Quick Optimize
+      </button>
+      
+      <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch" <%= user.preferences.theme === 'dark' ? 'checked' : '' %>>
+        <label for="theme-switch"></label>
+      </div>
+      
+      <div class="user-dropdown">
+        <div class="user-avatar">
+          <%= user.email.charAt(0).toUpperCase() %>
+        </div>
+        <span class="user-email"><%= user.email %></span>
+        <i class="fas fa-chevron-down"></i>
+        
+        <div class="dropdown-menu">
+          <a href="/dashboard/settings"><i class="fas fa-cog"></i> Settings</a>
+          <a href="/dashboard/profile"><i class="fas fa-user"></i> Profile</a>
+          <a href="/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <nav class="nav-menu">
+      <ul>
+        <li class="active"><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="/dashboard/calendar"><i class="fas fa-calendar"></i> Calendar</a></li>
+        <li><a href="/dashboard/roadmap"><i class="fas fa-map"></i> Roadmap</a></li>
+        <li><a href="/dashboard/settings"><i class="fas fa-cog"></i> Settings</a></li>
+      </ul>
+    </nav>
+  </aside>

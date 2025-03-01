@@ -25,10 +25,36 @@ router.get('/', isAuthenticated, async (req, res) => {
     
     // Initialize calendar service
     const calendarService = await new CalendarService(req.user.id).initialize();
-    
+    res.locals.getColorFromId = function(colorId) {
+        const colorMap = {
+          '1': '#7986CB', // Blue
+          '2': '#33B679', // Green
+          '3': '#8E24AA', // Purple
+          '4': '#E67C73', // Red
+          '5': '#F6BF26', // Yellow
+          '6': '#F4511E', // Orange
+          '7': '#039BE5', // Cyan
+          '8': '#616161', // Grey
+          '9': '#3F51B5', // Indigo
+          '10': '#0B8043', // Dark green
+          '11': '#D50000'  // Dark red
+        };
+        return colorMap[colorId] || '#039BE5'; // Default to blue
+      };
+      
     // Get events for the next 7 days
     const events = await calendarService.getEvents(today.toJSDate(), endOfWeek.toJSDate());
-    
+    const metrics = {
+        productivity: 75,
+        productivityTrend: 10,
+        wellness: 80,
+        wellnessTrend: 5,
+        focusHours: 4,
+        focusGoal: 8,
+        balance: 60,
+        workPercentage: 70,
+        lifePercentage: 30
+      };
     // Get tasks for the user
     const tasks = await Task.findAll({
       where: {
@@ -43,8 +69,11 @@ router.get('/', isAuthenticated, async (req, res) => {
       user: req.user,
       events,
       tasks,
-      today: today.toFormat('yyyy-MM-dd'),
-      endOfWeek: endOfWeek.toFormat('yyyy-MM-dd')
+      metrics,  
+      currentDate: today.toFormat('yyyy-MM-dd'),
+      endOfWeek: endOfWeek.toFormat('yyyy-MM-dd'),
+      getColorFromId: getColorFromId  // Add this line to pass the function
+     
     });
   } catch (error) {
     console.error('Error loading dashboard:', error);

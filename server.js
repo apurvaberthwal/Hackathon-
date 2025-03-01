@@ -1,5 +1,6 @@
 const app = require("./index");
 const http = require('http');
+const { Server } = require('socket.io');
 const debug = require('debug')('ai-work-life-balance:server');
 
 // Normalize port and set it in Express
@@ -15,6 +16,28 @@ app.set('port', port);
 
 // Create HTTP server
 const server = http.createServer(app);
+
+// Set up Socket.io
+const io = new Server(server);
+
+// WebSocket connection handling
+io.on('connection', (socket) => {
+  console.log('A user connected');
+  
+  // When a user authenticates, join them to a room with their user ID
+  socket.on('authenticate', (userId) => {
+    socket.join(`user-${userId}`);
+    console.log(`User ${userId} authenticated`);
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+// Make io accessible from other modules
+app.set('io', io);
 
 // Listen on provided port, on all network interfaces
 server.listen(port);
