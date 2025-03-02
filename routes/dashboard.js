@@ -1,10 +1,12 @@
 // routes/dashboard.js
 const express = require('express');
 const router = express.Router();
-const { Task, User } = require('../models');
+const { Task, User,Roadmap } = require('../models');
 const CalendarService = require('../services/calendarService');
 const GeminiService = require('../services/geminiService');
 const { DateTime } = require('luxon');
+const { sequelize, Sequelize } = require('../config/db');
+const { Op } = require('sequelize');  // Add this import for operators
 
 // Authentication middleware
 const isAuthenticated = (req, res, next) => {
@@ -16,73 +18,89 @@ const isAuthenticated = (req, res, next) => {
 
 // Main dashboard
 router.get('/', isAuthenticated, async (req, res) => {
-  try {
-    // Get today's date in user's timezone
-    const user = await User.findByPk(req.user.id);
-    const userTimezone = user.preferences.timezone || 'UTC';
-    const today = DateTime.now().setZone(userTimezone).startOf('day');
-    const endOfWeek = today.plus({ days: 7 }).endOf('day');
-    
-    // Initialize calendar service
-    const calendarService = await new CalendarService(req.user.id).initialize();
-    res.locals.getColorFromId = function(colorId) {
-        const colorMap = {
-          '1': '#7986CB', // Blue
-          '2': '#33B679', // Green
-          '3': '#8E24AA', // Purple
-          '4': '#E67C73', // Red
-          '5': '#F6BF26', // Yellow
-          '6': '#F4511E', // Orange
-          '7': '#039BE5', // Cyan
-          '8': '#616161', // Grey
-          '9': '#3F51B5', // Indigo
-          '10': '#0B8043', // Dark green
-          '11': '#D50000'  // Dark red
-        };
-        return colorMap[colorId] || '#039BE5'; // Default to blue
-      };
+    try {
+      const user = await User.findByPk(req.user.id);
+      const userTimezone = user.preferences.timezone || 'UTC';
+      const today = DateTime.now().setZone(userTimezone).startOf('day');
+      const endOfWeek = today.plus({ days: 7 }).endOf('day');
+      const calendarService = await new CalendarService(req.user.id).initialize();
+      const geminiService = new GeminiService();
+  
+      // Fetch events
+      const events = await calendarService.getEvents(today.toJSDate(), endOfWeek.toJSDate());
+  
+      // Fetch tasks
+      const tasks = await Task.findAll({
+        where: { user_id: req.user.id, status: 'pending' },
+        order: [['priority', 'ASC'], ['scheduled_time', 'ASC']]
+      });
+  
+      // Calculate productivity metrics (simplified for now)
+      const completedTasks = await Task.count({
+        where: { 
+          user_id: req.user.id, 
+          status: 'completed',
+          created_at: {
+            [Op.gte]: today.minus({ days: 7 }).toJSDate()
+          }
+        }
+      });
       
-    // Get events for the next 7 days
-    const events = await calendarService.getEvents(today.toJSDate(), endOfWeek.toJSDate());
-    const metrics = {
-        productivity: 75,
-        productivityTrend: 10,
-        wellness: 80,
-        wellnessTrend: 5,
-        focusHours: 4,
-        focusGoal: 8,
-        balance: 60,
-        workPercentage: 70,
-        lifePercentage: 30
+      // In the totalTasks query:
+      const totalTasks = await Task.count({
+        where: { 
+          user_id: req.user.id,
+          created_at: {
+            [Op.gte]: today.minus({ days: 7 }).toJSDate()
+          }
+        }
+      });
+      const metrics = {
+        focusScore: Math.round((completedTasks / (totalTasks || 1)) * 100), // Simplified
+        taskCompletion: totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0,
+        dailyFocusTime: 3.2, // Placeholder; calculate from events later
+        workLifeBalance: 76 // Placeholder; calculate later
       };
-    // Get tasks for the user
-    const tasks = await Task.findAll({
-      where: {
-        user_id: req.user.id,
-        status: 'pending'
-      },
-      order: [['priority', 'ASC'], ['scheduled_time', 'ASC']]
-    });
-    
-    // Render dashboard with data
-    res.render('dashboard', {
-      user: req.user,
-      events,
-      tasks,
-      metrics,  
-      currentDate: today.toFormat('yyyy-MM-dd'),
-      endOfWeek: endOfWeek.toFormat('yyyy-MM-dd'),
-      getColorFromId: getColorFromId  // Add this line to pass the function
-     
-    });
-  } catch (error) {
-    console.error('Error loading dashboard:', error);
-    res.status(500).render('error', {
-      message: 'Error loading dashboard',
-      error: process.env.NODE_ENV === 'development' ? error : {}
-    });
+  
+      // Fetch AI insights
+      const insights = await geminiService.generateInsights(events, tasks, user.preferences);
+  
+      // Fetch roadmap progress
+      const latestRoadmap = await Roadmap.findOne({
+        where: { user_id: req.user.id },
+        order: [['version', 'DESC']]
+      });
+      const roadmapProgress = latestRoadmap ? parseRoadmapProgress(latestRoadmap.roadmap) : [];
+  
+      res.render('dashboard', {
+        user: req.user,
+        events,
+        tasks,
+        metrics,
+        insights,
+        roadmapProgress,
+        currentDate: today.toFormat('yyyy-MM-dd'),
+        endOfWeek: endOfWeek.toFormat('yyyy-MM-dd'),
+        getColorFromId
+      });
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+      res.status(500).render('error', { message: 'Error loading dashboard' });
+    }
+  });
+  
+  // Helper to parse roadmap progress (example implementation)
+  function parseRoadmapProgress(roadmap) {
+    // Assuming roadmap is an object with goals and progress
+    return roadmap.goals ? roadmap.goals.map(goal => ({
+      name: goal.name,
+      progress: goal.progress || 0
+    })) : [
+      { name: 'Reduce Meeting Time', progress: 65 },
+      { name: 'Increase Focus Time', progress: 42 },
+      { name: 'Work-Life Balance', progress: 78 }
+    ];
   }
-});
 
 // Calendar view
 router.get('/calendar', isAuthenticated, async (req, res) => {

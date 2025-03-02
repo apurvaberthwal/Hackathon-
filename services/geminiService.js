@@ -115,6 +115,97 @@ class GeminiService {
       }
     ];
   }
+// Add this new method to your GeminiService class
+
+/**
+ * Generate insights based on user events, tasks, and preferences
+ * @param {Array} events - Calendar events
+ * @param {Array} tasks - User tasks
+ * @param {Object} preferences - User preferences
+ * @returns {Array} Insights with titles, descriptions, and icons
+ */
+async generateInsights(events, tasks, preferences) {
+  try {
+    const prompt = `
+    You are an AI assistant specialized in work-life balance analysis.
+    
+    Analyze this user's schedule and tasks to generate helpful insights.
+    
+    Your response MUST be valid JSON with this exact format:
+    [
+      {
+        "title": "Insight Title",
+        "description": "Insight description with actionable advice.",
+        "icon": "font-awesome-icon-name"
+      }
+    ]
+    
+    Generate exactly 3 insightful observations about work-life balance, productivity, and focus time.
+    
+    Use font-awesome icon names like: bullseye, users, balance-scale, clock, calendar, etc.
+    `;
+
+    const result = await this.model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 1024,
+        topP: 0.8,
+        topK: 40
+      }
+    });
+
+    const response = result.response.text();
+    
+    try {
+      // Try to extract JSON from the response (handle cases where model adds extra text)
+      const jsonMatch = response.match(/\[[\s\S]*\]/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : response;
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.error('Error parsing insights from Gemini:', e);
+      
+      // Return default insights if parsing fails
+      return [
+        {
+          title: "Focus Time Optimization",
+          description: "Schedule your most important tasks during your peak energy hours to maximize productivity.",
+          icon: "bullseye"
+        },
+        {
+          title: "Meeting Balance",
+          description: "Consider consolidating meetings to leave larger blocks of uninterrupted focus time.",
+          icon: "users"
+        },
+        {
+          title: "Work-Life Harmony",
+          description: "Make time for personal activities to maintain overall wellbeing and prevent burnout.",
+          icon: "balance-scale"
+        }
+      ];
+    }
+  } catch (error) {
+    console.error('Error generating insights with Gemini:', error);
+    // Return default insights if API call fails
+    return [
+      {
+        title: "Focus Time Optimization",
+        description: "Schedule your most important tasks during your peak energy hours to maximize productivity.",
+        icon: "bullseye"
+      },
+      {
+        title: "Meeting Balance",
+        description: "Consider consolidating meetings to leave larger blocks of uninterrupted focus time.",
+        icon: "users"
+      },
+      {
+        title: "Work-Life Harmony",
+        description: "Make time for personal activities to maintain overall wellbeing and prevent burnout.",
+        icon: "balance-scale"
+      }
+    ];
+  }
+}
 
   async suggestTimeSlots(schedule, freeSlots, taskType, duration, userPreferences) {
     try {

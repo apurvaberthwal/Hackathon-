@@ -1,347 +1,350 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include('./partials/header') %>
-    <title>Dashboard | AI Work-Life Balance</title>
-    <link rel="stylesheet" href="/css/dashboard.css">
-
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="stylesheet" href="/css/theme.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowTime - Your Productivity Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="dashboard-page">
-  <div class="app-container">
-  
-    
-    <main class="main-content">
-      <div class="content-header">
-        <h1>Dashboard</h1>
-        <div class="header-actions">
-          <button id="quick-optimize-btn" class="btn btn-primary btn-glow">
-            <i class="fas fa-magic"></i> Quick Optimize
-          </button>
-          <div class="theme-toggle">
-            <input type="checkbox" id="theme-switch" <%= user.preferences.theme === 'dark' ? 'checked' : '' %>>
-            <label for="theme-switch"></label>
+<body class="<%= user.preferences?.theme || 'light' %>-theme">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar Navigation -->
+      <div class="col-md-2 sidebar">
+        <div class="logo">
+          <h2>FlowTime</h2>
+        </div>
+        <nav>
+          <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/dashboard/calendar">Calendar</a></li>
+            <li class="nav-item"><a class="nav-link" href="/dashboard/roadmap">Productivity Roadmap</a></li>
+            <li class="nav-item"><a class="nav-link" href="/dashboard/settings">Settings</a></li>
+            <li class="nav-item"><a class="nav-link" href="/auth/logout">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+      
+      <!-- Main Content -->
+      <div class="col-md-10 main-content">
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Welcome, <%= user.email ? user.email.split('@')[0] : 'User' %></h1>          <div class="quick-actions">
+            <button id="newTaskBtn" class="btn btn-primary">New Task</button>
+            <button id="optimizeBtn" class="btn btn-outline-secondary">Optimize Today</button>
+          </div>
+        </header>
+        
+        <!-- Metrics Overview -->
+        <div class="row metrics-row mb-4">
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3>Focus Score</h3>
+              <div class="score"><%= metrics.focusScore %></div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: <%= metrics.focusScore %>%" 
+                  aria-valuenow="<%= metrics.focusScore %>" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3>Task Completion</h3>
+              <div class="score"><%= metrics.taskCompletion %>%</div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: <%= metrics.taskCompletion %>%" 
+                  aria-valuenow="<%= metrics.taskCompletion %>" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3>Daily Focus Time</h3>
+              <div class="score"><%= metrics.dailyFocusTime %> hrs</div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: <%= (metrics.dailyFocusTime/8)*100 %>%" 
+                  aria-valuenow="<%= metrics.dailyFocusTime %>" aria-valuemin="0" aria-valuemax="8"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-card">
+              <h3>Work-Life Balance</h3>
+              <div class="score"><%= metrics.workLifeBalance %></div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: <%= metrics.workLifeBalance %>%" 
+                  aria-valuenow="<%= metrics.workLifeBalance %>" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div class="dashboard-grid">
-        <!-- Today's Schedule Card -->
-        <section class="card glass-card" id="today-schedule">
-          <div class="card-header">
-            <h2><i class="fas fa-calendar-day"></i> Today's Schedule</h2>
-            <span class="today-date"><%= new Date().toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'}) %></span>
-          </div>
-          <div class="card-body">
-            <div class="schedule-timeline">
-              <% 
-                const todayEvents = events.filter(event => {
-                  const eventDate = new Date(event.start.dateTime);
-                  const today = new Date();
-                  return eventDate.toDateString() === today.toDateString();
-                });
-              %>
-              
-              <% if (todayEvents.length === 0) { %>
-                <div class="empty-state">
-                  <i class="fas fa-calendar-plus"></i>
-                  <p>No events scheduled for today</p>
+        
+        <!-- Main Dashboard Sections -->
+        <div class="row">
+          <!-- Today's Schedule -->
+          <div class="col-lg-6">
+            <div class="dashboard-card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>Today's Schedule</h2>
+                <div class="date-picker">
+                  <input type="date" id="scheduleDate" value="<%= currentDate %>">
                 </div>
-              <% } else { %>
-                <ul class="events-list">
-                  <% todayEvents.forEach(event => { 
-                    const startTime = new Date(event.start.dateTime);
-                    const endTime = new Date(event.end.dateTime);
-                    const duration = (endTime - startTime) / (1000 * 60); // in minutes
+              </div>
+              <div class="card-body">
+                <div id="todaySchedule" class="schedule-timeline">
+                  <% 
+                    // Filter events for today
+                    const todayEvents = events.filter(event => {
+                      const eventDate = new Date(event.start.dateTime || event.start.date);
+                      const today = new Date(currentDate);
+                      return eventDate.toDateString() === today.toDateString();
+                    });
+                    
+                    if (todayEvents.length === 0) { 
                   %>
-                    <li class="event-item" data-event-id="<%= event.id %>">
-                      <div class="event-time">
-                        <%= startTime.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'}) %>
-                      </div>
-                      <div class="event-card" style="--event-color: <%= getColorFromId(event.colorId) %>">
-                        <h3 class="event-title"><%= event.summary %></h3>
+                    <div class="empty-state">
+                      <p>No events scheduled for today</p>
+                    </div>
+                  <% } else { %>
+                    <% todayEvents.forEach(event => { %>
+                      <div class="timeline-item" style="border-left-color: <%= getColorFromId(event.colorId) %>">
+                        <div class="time">
+                          <%= new Date(event.start.dateTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                        </div>
                         <div class="event-details">
-                          <span class="event-duration"><i class="far fa-clock"></i> <%= Math.floor(duration) %> min</span>
+                          <h4><%= event.summary %></h4>
                           <% if (event.location) { %>
-                            <span class="event-location"><i class="fas fa-map-marker-alt"></i> <%= event.location %></span>
+                            <div class="location"><%= event.location %></div>
                           <% } %>
                         </div>
                       </div>
-                    </li>
-                  <% }); %>
-                </ul>
-              <% } %>
+                    <% }); %>
+                  <% } %>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
-
-        <!-- Tasks Card -->
-        <section class="card glass-card" id="tasks-card">
-          <div class="card-header">
-            <h2><i class="fas fa-tasks"></i> Tasks</h2>
-            <button id="add-task-btn" class="btn btn-sm">
-              <i class="fas fa-plus"></i> Add Task
-            </button>
-          </div>
-          <div class="card-body">
-            <% if (tasks.length === 0) { %>
-              <div class="empty-state">
-                <i class="fas fa-clipboard-list"></i>
-                <p>No pending tasks</p>
+          
+          <!-- Tasks -->
+          <div class="col-lg-6">
+            <div class="dashboard-card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>Pending Tasks</h2>
+                <div class="task-filter">
+                  <select id="taskFilter">
+                    <option value="all">All Tasks</option>
+                    <option value="today">Due Today</option>
+                    <option value="week">Due This Week</option>
+                  </select>
+                </div>
               </div>
-            <% } else { %>
-              <ul class="tasks-list">
-                <% tasks.forEach(task => { %>
-                  <li class="task-item" data-task-id="<%= task.id %>">
-                    <div class="task-checkbox">
-                      <input type="checkbox" id="task-<%= task.id %>" class="task-status-checkbox">
-                      <label for="task-<%= task.id %>"></label>
+              <div class="card-body">
+                <div id="taskList" class="task-list">
+                  <% if (tasks.length === 0) { %>
+                    <div class="empty-state">
+                      <p>No pending tasks</p>
                     </div>
-                    <div class="task-content">
-                      <h3 class="task-title"><%= task.title %></h3>
-                      <% if (task.scheduled_time) { 
-                        const taskTime = new Date(task.scheduled_time);
-                      %>
-                        <span class="task-time">
-                          <i class="far fa-clock"></i> 
-                          <%= taskTime.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'}) %>
-                          (<%= task.duration %> min)
-                        </span>
-                      <% } %>
-                      <div class="task-badges">
-                        <span class="badge badge-<%= task.task_type %>"><%= task.task_type %></span>
-                        <span class="badge badge-priority badge-p<%= task.priority %>">P<%= task.priority %></span>
+                  <% } else { %>
+                    <% tasks.forEach(task => { %>
+                      <div class="task-item" data-id="<%= task.id %>">
+                        <div class="task-checkbox">
+                          <input type="checkbox" id="task<%= task.id %>" class="task-complete-checkbox">
+                          <label for="task<%= task.id %>"></label>
+                        </div>
+                        <div class="task-details">
+                          <h4><%= task.title %></h4>
+                          <div class="task-meta">
+                            <span class="task-type <%= task.task_type %>"><%= task.task_type %></span>
+                            <% if (task.scheduled_time) { %>
+                              <span class="task-time">
+                                <%= new Date(task.scheduled_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                              </span>
+                            <% } %>
+                            <span class="task-duration"><%= task.duration %> min</span>
+                          </div>
+                        </div>
+                        <div class="task-actions">
+                          <button class="btn btn-sm btn-outline-primary edit-task" data-id="<%= task.id %>">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <div class="task-actions">
-                      <button class="btn btn-icon edit-task-btn"><i class="fas fa-edit"></i></button>
-                      <button class="btn btn-icon delete-task-btn"><i class="fas fa-trash"></i></button>
-                    </div>
-                  </li>
-                <% }); %>
-              </ul>
-            <% } %>
-          </div>
-        </section>
-
-        <!-- Productivity Stats Card -->
-        <section class="card glass-card" id="productivity-stats">
-          <div class="card-header">
-            <h2><i class="fas fa-chart-line"></i> Productivity</h2>
-            <span class="stats-period">Last 7 days</span>
-          </div>
-          <div class="card-body">
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-value">4.8</div>
-                <div class="stat-label">Focus Score</div>
-                <div class="stat-chart">
-                  <canvas id="focusChart" width="100" height="50"></canvas>
-                </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">68%</div>
-                <div class="stat-label">Task Completion</div>
-                <div class="stat-chart">
-                  <canvas id="taskChart" width="100" height="50"></canvas>
-                </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">3.2h</div>
-                <div class="stat-label">Daily Focus Time</div>
-                <div class="stat-chart">
-                  <canvas id="timeChart" width="100" height="50"></canvas>
-                </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">76%</div>
-                <div class="stat-label">Work-Life Balance</div>
-                <div class="stat-chart">
-                  <canvas id="balanceChart" width="100" height="50"></canvas>
+                    <% }); %>
+                  <% } %>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-
-        <!-- AI Insights Card -->
-        <section class="card glass-card" id="ai-insights">
-          <div class="card-header">
-            <h2><i class="fas fa-robot"></i> AI Insights</h2>
-            <button id="refresh-insights-btn" class="btn btn-sm">
-              <i class="fas fa-sync"></i> Refresh
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="insights-content">
-              <div class="insight-item">
-                <i class="fas fa-lightbulb insight-icon"></i>
-                <div class="insight-text">
-                  <h3>Focus Time Optimization</h3>
-                  <p>Your most productive hours appear to be 9-11 AM. Schedule deep work during this period.</p>
-                </div>
-              </div>
-              <div class="insight-item">
-                <i class="fas fa-bell insight-icon"></i>
-                <div class="insight-text">
-                  <h3>Meeting Load Alert</h3>
-                  <p>You have 3 consecutive meetings tomorrow. Consider spacing them out to reduce fatigue.</p>
-                </div>
-              </div>
-              <div class="insight-item">
-                <i class="fas fa-heart insight-icon"></i>
-                <div class="insight-text">
-                  <h3>Wellness Suggestion</h3>
-                  <p>You haven't scheduled any exercise this week. Consider a 30-minute walk tomorrow at 4 PM.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Roadmap Progress Card -->
-        <section class="card glass-card" id="roadmap-progress">
-          <div class="card-header">
-            <h2><i class="fas fa-map-signs"></i> Roadmap Progress</h2>
-            <a href="/dashboard/roadmap" class="btn btn-sm">
-              <i class="fas fa-external-link-alt"></i> View Full
-            </a>
-          </div>
-          <div class="card-body">
-            <div class="roadmap-preview">
-              <div class="goal-item">
-                <div class="goal-info">
-                  <h3>Reduce Meeting Time</h3>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: 65%"></div>
-                  </div>
-                  <span class="progress-value">65%</span>
-                </div>
-              </div>
-              <div class="goal-item">
-                <div class="goal-info">
-                  <h3>Increase Focus Time</h3>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: 42%"></div>
-                  </div>
-                  <span class="progress-value">42%</span>
-                </div>
-              </div>
-              <div class="goal-item">
-                <div class="goal-info">
-                  <h3>Work-Life Balance</h3>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: 78%"></div>
-                  </div>
-                  <span class="progress-value">78%</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        </div>
         
-
-  <!-- Add Task Modal -->
-  <div class="modal" id="add-task-modal">
-    <div class="modal-content glass-card">
-      <div class="modal-header">
-        <h2>Add New Task</h2>
-        <button class="close-modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="task-form">
-          <div class="form-group">
-            <label for="task-title">Title</label>
-            <input type="text" id="task-title" name="title" required>
-          </div>
-          <div class="form-group">
-            <label for="task-description">Description</label>
-            <textarea id="task-description" name="description"></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-type">Type</label>
-              <select id="task-type" name="task_type">
-                <option value="work">Work</option>
-                <option value="personal">Personal</option>
-                <option value="health">Health</option>
-                <option value="learning">Learning</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="task-priority">Priority</label>
-              <select id="task-priority" name="priority">
-                <option value="1">Highest</option>
-                <option value="2">High</option>
-                <option value="3" selected>Medium</option>
-                <option value="4">Low</option>
-                <option value="5">Lowest</option>
-              </select>
+        <!-- Second row - AI Insights and Roadmap Progress -->
+        <div class="row mt-4">
+          <!-- AI Insights -->
+          <div class="col-lg-6">
+            <div class="dashboard-card">
+              <div class="card-header">
+                <h2>AI Productivity Insights</h2>
+              </div>
+              <div class="card-body">
+                <div id="aiInsights" class="insights-container">
+                  <% if (!insights || !insights.length) { %>
+                    <div class="empty-state">
+                      <p>No insights available yet. Complete more tasks to generate insights.</p>
+                    </div>
+                  <% } else { %>
+                    <% insights.forEach(insight => { %>
+                      <div class="insight-item">
+                        <div class="insight-icon">
+                          <i class="bi bi-lightbulb"></i>
+                        </div>
+                        <div class="insight-content">
+                          <h4><%= insight.title %></h4>
+                          <p><%= insight.description %></p>
+                        </div>
+                      </div>
+                    <% }); %>
+                  <% } %>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-date">Date</label>
-              <input type="date" id="task-date" name="task_date">
+          
+          <!-- Roadmap Progress -->
+          <div class="col-lg-6">
+            <div class="dashboard-card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>Roadmap Progress</h2>
+                <a href="/dashboard/roadmap" class="btn btn-sm btn-outline-primary">View Full Roadmap</a>
+              </div>
+              <div class="card-body">
+                <div id="roadmapProgress">
+                  <% if (!roadmapProgress || !roadmapProgress.length) { %>
+                    <div class="empty-state">
+                      <p>No roadmap generated yet</p>
+                      <button id="generateRoadmapBtn" class="btn btn-primary mt-2">Generate Roadmap</button>
+                    </div>
+                  <% } else { %>
+                    <% roadmapProgress.forEach(goal => { %>
+                      <div class="goal-progress">
+                        <div class="d-flex justify-content-between">
+                          <h4><%= goal.name %></h4>
+                          <span class="progress-percentage"><%= goal.progress %>%</span>
+                        </div>
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" style="width: <%= goal.progress %>%" 
+                            aria-valuenow="<%= goal.progress %>" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                      </div>
+                    <% }); %>
+                  <% } %>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="task-time">Time</label>
-              <input type="time" id="task-time" name="task_time">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="task-duration">Duration (minutes)</label>
-            <input type="number" id="task-duration" name="duration" value="30" min="5" step="5">
-          </div>
-          <div class="form-actions">
-            <button type="button" id="suggest-time-btn" class="btn btn-secondary">
-              <i class="fas fa-magic"></i> Suggest Time
-            </button>
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save"></i> Save Task
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick Optimize Modal -->
-  <div class="modal" id="optimize-modal">
-    <div class="modal-content glass-card">
-      <div class="modal-header">
-        <h2>Schedule Optimization</h2>
-        <button class="close-modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="optimization-loading">
-          <div class="loader"></div>
-          <p>AI is analyzing your schedule and optimizing your day...</p>
-        </div>
-        <div class="optimization-results" style="display: none;">
-          <div class="results-summary">
-            <i class="fas fa-check-circle"></i>
-            <h3>Your schedule has been optimized!</h3>
-            <p>We found <span id="optimization-count">0</span> improvements to your day.</p>
-          </div>
-          <ul id="optimization-list" class="optimization-list">
-            <!-- Optimization suggestions will be added here by JS -->
-          </ul>
-          <div class="form-actions">
-            <button id="cancel-optimization-btn" class="btn btn-secondary">Cancel</button>
-            <button id="apply-optimization-btn" class="btn btn-primary">Apply Changes</button>
           </div>
         </div>
       </div>
     </div>
   </div>
-</section>
+  
+  <!-- New Task Modal -->
+  <div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="taskModalLabel">New Task</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="taskForm">
+            <input type="hidden" id="taskId">
+            <div class="mb-3">
+              <label for="taskTitle" class="form-label">Title</label>
+              <input type="text" class="form-control" id="taskTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="taskDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="taskType" class="form-label">Type</label>
+                <select class="form-select" id="taskType">
+                  <option value="work">Work</option>
+                  <option value="personal">Personal</option>
+                  <option value="health">Health</option>
+                  <option value="learning">Learning</option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="taskPriority" class="form-label">Priority</label>
+                <select class="form-select" id="taskPriority">
+                  <option value="1">High</option>
+                  <option value="2">Medium</option>
+                  <option value="3" selected>Normal</option>
+                  <option value="4">Low</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="taskDuration" class="form-label">Duration (mins)</label>
+                <input type="number" class="form-control" id="taskDuration" min="5" value="30">
+              </div>
+              <div class="col">
+                <label for="taskScheduled" class="form-label">Scheduled Time</label>
+                <input type="datetime-local" class="form-control" id="taskScheduled">
+              </div>
+            </div>
+            <div class="mb-3 time-suggestions d-none">
+              <label class="form-label">Suggested Times:</label>
+              <div id="timeSuggestions" class="d-flex flex-wrap gap-2"></div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="getSuggestionsBtn" class="btn btn-outline-primary">Get Time Suggestions</button>
+          <button type="button" id="saveTaskBtn" class="btn btn-primary">Save Task</button>
+        </div>
       </div>
-    </main>
+    </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Optimization Modal -->
+  <div class="modal fade" id="optimizeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Daily Schedule Optimization</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="optimizationSpinner" class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing your schedule and generating optimizations...</p>
+          </div>
+          <div id="optimizationResults" class="d-none">
+            <h6>Here are the recommended adjustments to your schedule:</h6>
+            <div id="optimizationList" class="list-group mt-3"></div>
+          </div>
+          <div id="optimizationEmpty" class="text-center mt-4 d-none">
+            <p>No optimization suggestions available for today's schedule.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" id="applyOptimizationsBtn" class="btn btn-primary d-none">Apply All Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
   <script src="/js/dashboard.js"></script>
- 
-  <script src="/js/themeToggle.js"></script>
 </body>
 </html>

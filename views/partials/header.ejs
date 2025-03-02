@@ -1,43 +1,30 @@
-<!-- views/partials/header.ejs -->
-<header class="header">
-    <div class="logo">
-      <h1><span class="text-gradient">Balance</span>AI</h1>
+<header class="dashboard-header">
+    <div class="logo-container">
+        <img src="/images/logo.png" alt="Taskify Logo" class="logo">
+        <h1>Taskify</h1>
     </div>
-    
-    <div class="header-actions">
-      <button id="quick-optimize-btn" class="btn btn-primary btn-glow">
-        <i class="fas fa-magic"></i> Quick Optimize
-      </button>
-      
-      <div class="theme-toggle">
-        <input type="checkbox" id="theme-switch" <%= user.preferences.theme === 'dark' ? 'checked' : '' %>>
-        <label for="theme-switch"></label>
-      </div>
-      
-      <div class="user-dropdown">
-        <div class="user-avatar">
-          <%= user.email.charAt(0).toUpperCase() %>
-        </div>
-        <span class="user-email"><%= user.email %></span>
-        <i class="fas fa-chevron-down"></i>
-        
-        <div class="dropdown-menu">
-          <a href="/dashboard/settings"><i class="fas fa-cog"></i> Settings</a>
-          <a href="/dashboard/profile"><i class="fas fa-user"></i> Profile</a>
-          <a href="/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-      </div>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search tasks...">
+        <button id="searchBtn"><i class="fas fa-search"></i></button>
     </div>
-  </header>
-  
-  <!-- Sidebar Navigation -->
-  <aside class="sidebar">
-    <nav class="nav-menu">
-      <ul>
-        <li class="active"><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li><a href="/dashboard/calendar"><i class="fas fa-calendar"></i> Calendar</a></li>
-        <li><a href="/dashboard/roadmap"><i class="fas fa-map"></i> Roadmap</a></li>
-        <li><a href="/dashboard/settings"><i class="fas fa-cog"></i> Settings</a></li>
-      </ul>
-    </nav>
-  </aside>
+    <div class="user-container">
+        <div class="notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notification-count" id="notificationCount">0</span>
+        </div>
+        <div class="user-profile">
+            <img src="/images/avatar.png" alt="User Avatar" id="userAvatar">
+            <div class="user-info">
+                <p id="userName">John Doe</p>
+                <small id="userRole">Product Manager</small>
+            </div>
+            <div class="dropdown-menu">
+                <ul>
+                    <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+                    <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>

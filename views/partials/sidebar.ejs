@@ -1,10 +1,79 @@
-<aside class="sidebar">
-    <nav class="nav-menu">
-      <ul>
-        <li class="active"><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li><a href="/dashboard/calendar"><i class="fas fa-calendar"></i> Calendar</a></li>
-        <li><a href="/dashboard/roadmap"><i class="fas fa-map"></i> Roadmap</a></li>
-        <li><a href="/dashboard/settings"><i class="fas fa-cog"></i> Settings</a></li>
-      </ul>
+<div class="sidebar">
+    <nav class="sidebar-nav">
+        <ul>
+            <li class="active">
+                <a href="/dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tasks">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tasks</span>
+                </a>
+            </li>
+            <li>
+                <a href="/calendar">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendar</span>
+                </a>
+            </li>
+            <li>
+                <a href="/projects">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Projects</span>
+                </a>
+            </li>
+            <li>
+                <a href="/analytics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="wellness-section">
+                <a href="#" id="wellnessToggle">
+                    <i class="fas fa-heart"></i>
+                    <span>Wellness</span>
+                </a>
+                <ul class="wellness-submenu" id="wellnessSubmenu">
+                    <li>
+                        <a href="#" id="breakReminder">
+                            <i class="fas fa-coffee"></i>
+                            <span>Break Reminder</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="wellnessTips">
+                            <i class="fas fa-brain"></i>
+                            <span>Wellness Tips</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="workLifeBalance">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>Work-Life Balance</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     </nav>
-  </aside>
+    <div class="sidebar-footer">
+        <div class="wellness-stats">
+            <div class="wellness-stat">
+                <i class="fas fa-stopwatch"></i>
+                <span id="focusTime">0h focus time</span>
+            </div>
+            <div class="wellness-stat">
+                <i class="fas fa-coffee"></i>
+                <span id="breaksTaken">0 breaks taken</span>
+            </div>
+        </div>
+        <div class="toggle-sidebar">
+            <button id="toggleSidebar">
+                <i class="fas fa-angle-left"></i>
+            </button>
+        </div>
+    </div>
+</div>
